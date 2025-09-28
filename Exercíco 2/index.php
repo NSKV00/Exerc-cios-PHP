@@ -63,22 +63,89 @@ Se errar, exiba se o número sorteado era maior ou menor que o palpite.
 $method = $_SERVER['REQUEST_METHOD'];
 $rota = $_SERVER['REQUEST_URI'];
 
-$numero = 1;
+$numero1 = 1;
+$numero = 5;
+$valorCompra = 80;
+$ano = 2024;
+$palpite = 7;
 
 if ($method === 'GET'){
 
-    if ($rota === '/atividade/1'){
-        if ($numero < 0){
+    if ($rota === '/atividade1/1'){
+        if ($numero1 < 0){
             echo ('negativo');
-        } elseif ($numero > 0) {
+        } elseif ($numero1 > 0) {
             echo ('positivo');
         } else {
             echo ('0');
         }
     }
+
+    if ($rota === '/atividade1/2'){
+        if ($numero == 1) echo "Domingo";
+        elseif ($numero == 2) echo "Segunda";
+        elseif ($numero == 3) echo "Terça";
+        elseif ($numero == 4) echo "Quarta";
+        elseif ($numero == 5) echo "Quinta";
+        elseif ($numero == 6) echo "Sexta";
+        elseif ($numero == 7) echo "Sábado";
+        else echo "Dia inválido";
+    }
+
+    if ($rota === '/atividade1/3'){
+        if ($valorCompra >= 100){
+            $final = $valorCompra * 0.90;
+        } elseif ($valorCompra >= 50){
+            $final = $valorCompra * 0.95;
+        } else {
+            $final = $valorCompra;
+        }
+        echo "Valor final: R$ " . $final;
+    }
+
+    if ($rota === '/atividade1/4'){
+        if (($ano % 4 == 0 && $ano % 100 != 0) || $ano % 400 == 0){
+            echo "$ano é bissexto";
+        } else {
+            echo "$ano não é bissexto";
+        }
+    }
+
+    if ($rota === '/atividade1/5'){
+        $sorteado = rand(1,10);
+        echo "Número sorteado: $sorteado<br>";
+
+        if ($palpite == $sorteado){
+            echo "Parabéns, você acertou!";
+        } elseif ($palpite < $sorteado){
+            echo "Você errou, o número sorteado é MAIOR.";
+        } else {
+            echo "Você errou, o número sorteado é MENOR.";
+        }
+    }
 }
 
+if ($method === 'GET'){
 
+    if ($rota === '/atividade2/1'){
+        $soma = 0;
+        $i = 1;
+        while ($i <= 100){
+            $soma += $i;
+            $i++;
+        }
+        echo "Soma dos números de 1 a 100: $soma";
+    }
+
+    if ($rota === '/atividade2/2'){
+        echo "Números pares de 1 a 50:<br>";
+        for ($i = 1; $i <= 50; $i++){
+            if ($i % 2 == 0){
+                echo $i . "<br>";
+            }
+        }
+    }
+}
 
 ?>
 
