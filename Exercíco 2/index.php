@@ -28,8 +28,8 @@ Se errar, exiba se o número sorteado era maior ou menor que o palpite.
 
 3. Peça um número ao usuário e calcule o fatorial dele usando while.
 
-4. Gere um número aleatório entre 1 e 50. Peça ao usuário para adivinhar.
-- Enquanto ele errar, mostre dicas de "maior" ou "menor". Use do/while.
+(não é preciso fazer) 4. Gere um número aleatório entre 1 e 50. Peça ao usuário para adivinhar.
+- Enquanto ele errar, mostre dicas de "maior" ou "menor". Use do/while.)
 
 5. Construa este padrão com um for duplo
 
@@ -66,7 +66,7 @@ $rota = $_SERVER['REQUEST_URI'];
 $numero1 = 1;
 $numero = 5;
 $valorCompra = 80;
-$ano = 2024;
+$ano = 1800;
 $palpite = 7;
 
 if ($method === 'GET'){
@@ -112,7 +112,7 @@ if ($method === 'GET'){
     }
 
     if ($rota === '/atividade1/5'){
-        $sorteado = rand(1,10);
+        $sorteado = rand(1,10);/*$palpite;*/;
         echo "Número sorteado: $sorteado<br>";
 
         if ($palpite == $sorteado){
@@ -144,6 +144,16 @@ if ($method === 'GET'){
                 echo $i . "<br>";
             }
         }
+    }
+
+    if ($rota === '/atividade2/3'){
+        $i = 51;
+        $soma = 1;
+        while ($i > 0){
+            $soma *= $i;
+            $i--;
+        }
+        echo($soma);
     }
 }
 
