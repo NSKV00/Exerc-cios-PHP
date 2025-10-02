@@ -155,6 +155,88 @@ if ($method === 'GET'){
         }
         echo($soma);
     }
+
+    if ($rota === '/atividade2/5'){
+        for ($i = 1; $i <= 5000; $i++){
+            for ($j = 1; $j <= $i; $j++){
+                echo "*";
+            }
+            echo "<br>";
+        }
+    }
+}
+
+if ($method === 'GET'){
+
+    if ($rota === '/atividade3/1'){
+        $vetor = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29 ];
+        $soma = 1;
+
+        if (count($vetor) === 10){
+            for ($i = 0; $i < count($vetor); $i++){
+                $soma += $vetor[$i];
+            }
+            echo "Soma dos elementos do vetor: $soma";
+        } else {
+            echo "Vetor inválido";
+        }
+    }
+
+    if ($rota === '/atividade3/2'){
+        $vetor = [2, 3, 5, 7, 11, 13, 17, 19];
+        $menor = null;
+        $pmenor = 0;
+        $maior = null;
+        $pmaior = 0;
+
+        if (count($vetor) === 8){
+            for ($i = 0; $i < count($vetor); $i++){
+                if ($menor === null || $vetor[$i] < $menor){
+                    $menor = $vetor[$i];
+                    $pmenor = $i;
+                }
+                if ($maior === null || $vetor[$i] > $maior){
+                    $maior = $vetor[$i];
+                    $pmaior = $i;
+                }
+            }
+            echo "Menor: $menor, Posição: $pmenor<br>";
+            echo "Maior: $maior, Posição: $pmaior<br>";
+        } else {
+            echo "Vetor inválido";
+        }
+    }
+
+    if ($rota ==='/atividade3/3'){
+        $numeros = [10, 20, 30, 40, 50];
+
+        for ($i = count($numeros) - 1; $i >= 0; $i--){
+            echo $numeros[$i] . "<br>";
+        }
+    }
+
+    if ($rota === '/atividade3/4'){
+        $matriz = [
+            [2, 4, 6, 1, 3],
+            [15, 4, 8, 23, 7],
+            [9, 11, 5, 17, 13],
+            [14, 22, 18, 10, 6],
+            [3, 8, 12, 16, 20]
+        ];
+
+        for ($linha = 0; $linha < count($matriz); $linha++){
+            $maior = null;
+            for ($coluna = 0; $coluna < count($matriz[$linha]); $coluna++){
+                $matriZ = $matriz[$linha];
+                if ($maior < $matriZ[$coluna]){
+                    $maior = $matriz[$linha][$coluna];
+                }
+            }
+            echo($maior);
+            echo "<br>";
+        }
+        exit;
+    }
 }
 
 ?>

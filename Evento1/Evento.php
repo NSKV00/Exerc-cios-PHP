@@ -32,7 +32,7 @@ class Evento {
         return $this -> data_termino -> format('Y-m-d');
     }
 
-    public function setDataTermino (\DateTimeImmutable $dataTerminoNova =  new \DataTimeImmutavle()): void {
+    public function setDataTermino (\DateTimeImmutable $dataTerminoNova): void {
         $this -> data_termino = $dataTerminoNova;
     }
 
