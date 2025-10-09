@@ -1,13 +1,4 @@
-<!-- POST /itens
-1. json com todos os dados do item
-
-2. Criar o registro do banco de dados
-
-3. [opicional] Retornar o item criado com o ID gerado -->
-
 <?php
-$rota  = $_SERVER['REQUEST_URI'];
-$metodo = $_SERVER['REQUEST_METHOD'];
 
 $host = 'localhost';
 $user = 'root';
@@ -19,8 +10,6 @@ $banco = 'aula';
 //3. senha
 $conexao = new \PDO("mysql:host=$host;dbname=$banco", $user, $pass);
 
-
-$consulta = $conexao -> prepare('SELECT * FROM itens');
 $consulta -> execute();
 
 while ($linha = $consulta -> fetch(\PDO::FETCH_OBJ)) {
@@ -32,6 +21,3 @@ while ($linha = $consulta -> fetch(\PDO::FETCH_OBJ)) {
 echo '<pre>';
 print_r($conexao); 
 echo '</pre>';
-
-if ($rota === '/itens' && $metodo === 'POST') {
-}

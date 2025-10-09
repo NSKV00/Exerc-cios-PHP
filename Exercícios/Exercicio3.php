@@ -61,6 +61,7 @@ echo '</pre>';
 
 
 <?php
+echo '<br><br>';
 
 class Celular {
     public string $marca;
@@ -122,6 +123,7 @@ $celular -> usarBateria(50);
 
 
 <?php
+echo '<br><br>';
 
 class Contato {
     public string $nome;
@@ -176,6 +178,81 @@ $agenda -> listarContatos();
 
 
 <?php
+echo '<br><br>';
 
+class Veiculo {
+    public string $marca;
+    public string $modelo;
+    public int $ano;
+    public bool $ligado = false;
 
+    public function __construct(string $marca, string $modelo, int $ano) {
+        $this -> marca = $marca;
+        $this -> modelo = $modelo;
+        $this -> ano = $ano;
+    }
 
+    public function ligar(): void {
+        if (!$this -> ligado) {
+            $this -> ligado = true;
+            echo "{$this -> modelo} está ligado!. \n <br>";
+        } else {
+            echo "{$this -> modelo} já está ligado!. \n <br>";
+        }
+    }
+
+    public function desligar() {
+        if ($this -> ligado) {
+            $this -> ligado = false;
+            echo "{$this -> modelo} está desligado!. \n <br>";
+        } else {
+            echo "{$this -> modelo} já está desligado!. \n <br>";
+        }
+    }
+}
+
+ class Moto extends Veiculo {
+    public function empinar() {
+        if ($this -> ligado) {
+            echo "{$this -> modelo} está empinando!. \n <br>";
+        } else {
+            echo "Ligue {$this -> modelo} antes de empinar!. \n <br>";
+        }
+    }
+}
+
+class Carro extends Veiculo {
+    public function abrirPortaMalas(): void {
+        echo "Porta-malas de {$this -> modelo} está aberto!. \n <br>";
+    }
+}
+
+class Caminhao extends Veiculo {
+    public function carregar(): void {
+        if ($this -> ligado) {
+            echo "{$this -> modelo} está carregando!. \n <br>";
+        }else {
+            echo "Ligue {$this -> modelo} antes de carregar!. \n <br>";
+        }
+
+    }
+}
+
+$moto = new Moto("Honda", "CB 500", 2020);
+$moto -> ligar();
+$moto -> empinar(); 
+$moto -> desligar();
+echo '<br>';
+
+$carro = new Carro("Toyota", "Corolla", 2021);
+$carro -> ligar();
+$carro -> abrirPortaMalas();
+$carro -> desligar();
+echo '<br>';
+
+$caminhao = new Caminhao("Volvo", "FH16", 2019);
+$caminhao -> ligar();
+$caminhao -> carregar();
+$caminhao -> desligar();
+
+?>
