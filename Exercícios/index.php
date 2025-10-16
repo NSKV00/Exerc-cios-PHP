@@ -111,15 +111,122 @@ if ($metodo === 'POST'){
 }
 
 if ($metodo ==='GET'){
-    
+    if (isset($_GET['id']) && !empty($_GET['id'])){
+        $id = intval($_GET['id']);
+
+        $consulta = $conexao -> prepare('SELECT * FROM itens WHERE id = :id');
+        $consulta -> bindParam(':id', $id);
+        $consulta -> execute([':id' => $id]);
+
+        $resultado = $consulta -> fetch();
+
+        if ($resultado){
+            echo json_encode($resultado);
+        } else {
+            http_response_code(404);
+            echo json_encode(['erro' => 'Item não encontrado']);
+        }
+    } else {
+        $consulta = $conexao -> prepare('SELECT * FROM itens');
+        $consulta -> execute();
+        $resultados = $consulta -> fetchAll(PDO::FETCH_ASSOC);
+
+        echo json_encode($resultados);
+    }
+
+    // if (preg_match('/\/itens\/(\d+)/', $rota, $matches)){
+    //     $id = $matches[1];
+    //     $item = $conexao -> prepare('SELECT * FROM itens WHERE id = :id');
+    //     $item -> execute([':id' => $id]);
+    //     $resultado = $item -> fetch(\PDO::FETCH_OBJ);
+    //     if ($resultado){
+    //         echo json_encode($resultado);
+    //     } else {
+    //         http_response_code(404);
+    //         echo json_encode(['erro' => 'Item não encontrado']);
+    //     }
+    // } elseif ($rota === '/itens'){
+    //     $itens = $conexao -> query('SELECT * FROM itens');
+    //     $resultado = $itens -> fetchAll(\PDO::FETCH_OBJ);
+    //     echo json_encode($resultado);
+    // } else {
+    //     http_response_code(404);
+    //     echo json_encode(['erro' => 'Rota não encontrada']);
+    // }
 }
 
 if ($metodo === 'PUT'){
-    
+    if (!isset($_GET['id']) || empty($_GET['id'])){
+        http_response_code(400);
+        echo json_encode(['erro' => 'ID do item é obrigatório para atualização']);
+        exit;
+    }
+
+    $id = intval($_GET['id']);
+    $json = file_get_contents('php://input');
+    $data = json_decode($json, true);
+
+    $campos_requeridos = ['nome', 'tamanho_stack', 'quantidade_stack', 'tipo', 'durabilidade'];
+    foreach ($campos_requeridos as $campo) {
+        if (!isset($data[$campo])) {
+            http_response_code(400);
+            echo json_encode(['erro' => "Campo obrigatório faltando: $campo"]);
+            exit;
+        }
+    }
+
+    $sgl = 'UPDATE itens SET nome = :nome, tamanho_stack = :tamanho_stack, quantidade_stack = :quantidade_stack, tipo = :tipo, durabilidade = :durabilidade WHERE id = :id';
+    $atualizacao = $conexao -> prepare($sgl);
+    $atualizacao -> execute([
+        ':nome' => $data['nome'],
+        ':tamanho_stack' => (int)$data['tamanho_stack'],
+        ':quantidade_stack' => (int)$data['quantidade_stack'],
+        ':tipo' => $data['tipo'],
+        ':durabilidade' => (int)$data['durabilidade'],
+        ':id' => $id
+    ]);
+
+    if ($atualizacao -> rowCount() > 0){
+        echo json_encode(['sucesso' => 'Item atualizado com sucesso']);
+    } else {
+        http_response_code(404);
+        echo json_encode(['erro' => 'Item não encontrado ou sem alterações']);
+    }
+    //     $id = $matches[1];
+    //     $json = file_get_contents('php://input');
+    //     $data = json_decode($json, true);
+
+    //     if (!isset($data['nome']) || !isset($data['tamanho_stack']) || !isset($data['quantidade_stack']) || !isset($data['tipo']) || !isset($data['durabilidade'])) {
+    //         http_response_code(400);
+    //         echo json_encode(['erro' => 'Dados incompletos']);
+    //         exit;
+    //     }
+
+    //     $atualizacao = $conexao -> prepare('UPDATE itens SET nome = :nome, tamanho_stack = :tamanho_stack, quantidade_stack = :quantidade_stack, tipo = :tipo, durabilidade = :durabilidade WHERE id = :id');
+
+    //     $atualizacao -> execute([
+    //         ':nome' => $data['nome'],
+    //         ':tamanho_stack' => $data['tamanho_stack'],
+    //         ':quantidade_stack' => $data['quantidade_stack'],
+    //         ':tipo' => $data['tipo'],
+    //         ':durabilidade' => $data['durabilidade'],
+    //         ':id' => $id
+    //     ]);
+
+    //     if ($atualizacao -> rowCount() > 0){
+    //         echo json_encode(['sucesso' => 'Item atualizado com sucesso']);
+    //     } else {
+    //         http_response_code(404);
+    //         echo json_encode(['erro' => 'Item não encontrado ou sem alterações']);
+    //     }
+    // } else {
+    //     http_response_code(404);
+    //     echo json_encode(['erro' => 'Rota não encontrada']);
 }
+    
 // if ($rota === '/itens' && $metodo === 'POST') {
 //     if (
 //         $data = json_decode(file_get_contents('php://input'), true);
 //         $
 //     )
-// }
+//}
