@@ -1,0 +1,19 @@
+{
+    "name": "nicolasgiulianigarci/composer",
+    "description": "Projeto para exercitar uso de composer",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Nicolasgiulianigarci\\Composer\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "NSKV00",
+            "email": "nicolas.g.g.dsilva@gmail.com"
+        }
+    ],
+    "require": {
+        "phpoffice/phpspreadsheet": "^5.1"
+    }
+}
