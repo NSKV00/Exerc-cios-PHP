@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\EventoRequest;
 use Illuminate\Http\Request;
 use App\Models\Evento;
+use App\Models\Ingressos;
+use App\Models\Vendas;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Validation\Rule;
 
@@ -12,10 +15,24 @@ class EventoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function listar(Request $request)
+    public function listar()
+    {
+        $eventos = Evento::with('ingressos', 'vendas') -> get();
+             
+        return ['message' => 'Listando eventos', 'eventos' => $eventos->toArray()];
+    }
+
+    public function filtrar(Request $request)
     {
         $filtro = $request -> get('filtro');
-        $consulta = Evento::query();
+        $consulta = Evento::query()
+            -> with('ingressos');
+            //-> with('vendas');
+            //->withTrashed();
+
+        // $consulta = Ingressos::query()
+        //     -> with('evento')
+        //     ->withTrashed();
 
         if(!empty($filtro)){
             $consulta -> where('nome', 'Like', '%' . $filtro . '%');
@@ -84,42 +101,23 @@ class EventoController extends Controller
         return ['massage' => 'Postando eventos', 'evento' => $evento];
     }
 
-    public function deletar(string $id)
+    public function editar(EventoRequest $request, int $id)
     {
-        return ['massage' => 'Deletando eventos ' . $id];
+        $validate = $request -> all();
+
+        $evento = Evento::find($id);
+        $evento -> nome = $validate['nome'];
+        $evento -> data_inicio = $validate['data_inicio'];
+        $evento -> data_fim = $validate['data_fim'];
+        $evento -> save();
+
+        return ['massage' => 'Evento editado'];
     }
 
-   
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function deletar(int $id)
     {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $evento = Evento::find($id);
+        $evento -> delete();
+        return ['massage' => 'Deletando evento do sistema' . $id];
     }
 }
