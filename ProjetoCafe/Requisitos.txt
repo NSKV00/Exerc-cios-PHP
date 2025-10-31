@@ -1,0 +1,28 @@
+1. Controle de acesso
+    - Gerenciamento de usuário
+    - Acesso - cadastro/login
+        - Níveis de usuários:
+            - Admin
+            - Usuário
+    - Senha
+        - Min. 8 caracteres
+        - Letra maiúscula
+        - Letra minúscula
+        - Número
+        - Caracter especial (!@#$%&*)
+
+2. Gerenciamento de fila
+    - Registrar a ordem em que os usuários devem comprar café
+    - Sempre que for registrada uma compra pelo usuário da vez, deve automaticamente escalar o próximo a comprar
+
+3. Gerenciamento das compras
+    - Deve registrar quem comprou, quando e o que comprou ( café e filtro )
+    - Listagem das compras do sistema, com filtros de usuários, filtro e/ou café
+    - Admin pode editar os registros de compra,registrar sempre quem fez a última alteração e quando
+
+4. Dashboard
+    - Mostrar informações consolidadas  do sistema conforme necessidade, exemplos:
+        - Quanto tempo faz desde a última compra
+        - Qual o próximo da fila
+        - Resumo das últimas compras
+        - Relatório para ver a quantidade de compras por usuário
