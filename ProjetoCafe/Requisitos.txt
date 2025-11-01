@@ -17,7 +17,7 @@
 
 3. Gerenciamento das compras
     - Deve registrar quem comprou, quando e o que comprou ( café e filtro )
-    - Listagem das compras do sistema, com filtros de usuários, filtro e/ou café
+    - Listagem das compras do sistema, com filtros de usuários, filtro e/ou café, periodo ( data X até data Y )
     - Admin pode editar os registros de compra,registrar sempre quem fez a última alteração e quando
 
 4. Dashboard
