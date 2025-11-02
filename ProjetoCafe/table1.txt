@@ -1,0 +1,66 @@
+Modelo completo, mais complexo
+
+CREATE TABLE usuarios (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    senha_hash VARCHAR(255) NOT NULL,
+    nivel_usuario ENUM('admin', 'usuario') DEFAULT 'usuario' NOT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE fila_compra (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    posicao INT NOT NULL,
+    ativo BOOLEAN DEFAULT TRUE,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE compras (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    data_compra TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    comprou_cafe BOOLEAN DEFAULT FALSE,
+    comprou_filtro BOOLEAN DEFAULT FALSE,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    ultima_alteracao_por INT REFERENCES usuarios(id)
+);
+
+CREATE TABLE log_alteracoes (
+    id SERIAL PRIMARY KEY,
+    compra_id INT NOT NULL REFERENCES compras(id) ON DELETE CASCADE,
+    alterado_por INT NOT NULL REFERENCES usuarios(id),
+    data_alteracao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    descricao TEXT
+);
+
+CREATE VIEW dashboard_resumo AS
+SELECT
+    (SELECT nome FROM usuarios 
+        WHERE id = (SELECT usuario_id FROM fila_compra WHERE ativo = TRUE ORDER BY posicao LIMIT 1)
+    ) AS proximo_da_fila,
+    (SELECT MAX(data_compra) FROM compras) AS ultima_compra,
+    (CURRENT_TIMESTAMP - (SELECT MAX(data_compra) FROM compras)) AS tempo_desde_ultima_compra,
+    (SELECT COUNT(*) FROM compras) AS total_compras,
+    (SELECT COUNT(*) FROM usuarios) AS total_usuarios;
+
+-> Próximo da fila:
+SELECT u.nome 
+FROM fila_compra f
+JOIN usuarios u ON u.id = f.usuario_id
+WHERE f.ativo = TRUE
+ORDER BY f.posicao
+LIMIT 1;
+
+-> Resumo das compras por usuário:
+SELECT u.nome, COUNT(c.id) AS total_compras
+FROM compras c
+JOIN usuarios u ON u.id = c.usuario_id
+GROUP BY u.nome
+ORDER BY total_compras DESC;
+
+-> Tempo desde a última compra:
+SELECT NOW() - MAX(data_compra) AS tempo_desde_ultima_compra FROM compras;

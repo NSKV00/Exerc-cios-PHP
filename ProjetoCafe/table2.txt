@@ -1,0 +1,49 @@
+Modelo simples
+
+CREATE TABLE usuarios (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    senha_hash VARCHAR(255) NOT NULL,
+    nivel ENUM('admin', 'usuario') DEFAULT 'usuario' NOT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE fila (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    posicao INT NOT NULL,
+    ativo BOOLEAN DEFAULT TRUE,
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE compras (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    data_compra TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    cafe BOOLEAN DEFAULT FALSE,
+    filtro BOOLEAN DEFAULT FALSE,
+    alterado_por INT REFERENCES usuarios(id),
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-> Próximo da fila:
+SELECT u.nome
+FROM fila f
+JOIN usuarios u ON u.id = f.usuario_id
+WHERE f.ativo = TRUE
+ORDER BY f.posicao
+LIMIT 1;
+
+-> Resumo de compras por usuário:
+SELECT u.nome, COUNT(c.id) AS total
+FROM compras c
+JOIN usuarios u ON u.id = c.usuario_id
+GROUP BY u.nome
+ORDER BY total DESC;
+
+-> Tempo desde a última compra:
+SELECT NOW() - MAX(data_compra) AS tempo_desde_ultima_compra FROM compras;
+
+
