@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\CompraController;
+use App\Http\Controllers\FilaController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -10,7 +12,7 @@ Route::get('/user', function (Request $request) {
 });
 
 Route::prefix('usuario') -> group(function (){
-    Route::get('/', [UsuarioController::class, 'listar']);
+    Route::get('', [UsuarioController::class, 'listar']);
     Route::get('/{id}', [UsuarioController::class, 'buscarId']);
     Route::post('/criar', [UsuarioController::class, 'criar']);
     Route::put('/atualizar/{id}', [UsuarioController::class, 'atualizar']);
@@ -18,3 +20,27 @@ Route::prefix('usuario') -> group(function (){
     Route::delete('/destroy/{id}', [UsuarioController::class, 'destroy']);
     Route::post('/restore/{id}', [UsuarioController::class, 'restore']);
 });
+
+Route::prefix('fila') -> group(function (){
+    Route::get('', [FilaController::class, 'listar']);
+    Route::get('/{id}', [FilaController::class, 'buscarId']);
+    Route::post('/criar/{id}', [FilaController::class, 'criar']);
+    Route::delete('/deletar/{id}', [FilaController::class, 'deletar']);
+    Route::delete('/destroy/{id}', [FilaController::class, 'destroy']);
+    Route::post('/restore/{id}' , [FilaController::class, 'restore']);
+    Route::post('/moveraposcompra/{id}', [FilaController::class, 'moverAposCompra']);
+});
+
+Route::prefix('compra') -> group(function (){
+    Route::get('', [CompraController::class, 'listar']);
+    Route::get('/{id}', [CompraController::class, 'buscarId']);
+    Route::post('/criar', [CompraController::class, 'criar']);
+    Route::put('/atualizar/{id}', [CompraController::class, 'atualizar']);
+    Route::delete('/deletar/{id}', [CompraController::class, 'deletar']);
+    Route::delete('/destroy/{id}', [CompraController::class, 'destroy']);
+    Route::post('/restore/{id}', [CompraController::class, 'restore']);
+});
+
+// Route::prefix('login') -> group(function (){
+//     Route::get('', [LoginController::class, 'login']);
+// });
