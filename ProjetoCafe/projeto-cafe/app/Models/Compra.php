@@ -12,15 +12,16 @@ class Compra extends Model
 
     protected $table = 'compra';
     protected $primaryKey = 'id';
-    protected $fillable = ['usuario_id', 'fila_id'];
+    protected $fillable = ['usuario_id', 'fila_id', 'cafe_qnd', 'filtro_qnd'];
+    public $timestamps = true;
 
     public function Usuario(): BelongsTo
     {
-        return $this -> belongsTo(Usuario::class, 'usuario_id');
+        return $this->belongsTo(Usuario::class, 'usuario_id');
     }
 
     public function Fila(): BelongsTo
     {
-        return $this -> belongsTo(Fila::class, 'fila_id');
+        return $this->belongsTo(Fila::class, 'fila_id');
     }
 }

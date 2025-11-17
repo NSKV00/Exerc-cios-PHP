@@ -11,72 +11,66 @@ class UsuarioController extends Controller
 {
     public function listar()
     {
-        $evento = Usuario::all();
-
-        return ['message' => 'Listando usuários', 'usuários' => $evento -> toArray()];
+        $usuarios = Usuario::all();
+        return ['message' => 'Listando usuários', 'usuários' => $usuarios->toArray()];
     }
 
     public function buscarId(int $id)
     {
-        $evento = Usuario::findorFail($id);
-
-        return ['message' => 'Buscando usuário' . $id, 'usuário' => $evento -> toArray()];
+        $usuario = Usuario::findOrFail($id);
+        return ['message' => 'Buscando usuário: ' . $id, 'usuário' => $usuario->toArray()];
     }
 
     public function criar(UsuarioRequest $request)
     {
-        $validate = $request -> all();
+        $validate = $request->validated();
 
         $usuario = new Usuario();
-        $usuario -> nome = $validate['nome'];
-        $usuario -> email = $validate['email'];
-        $usuario -> senha = Hash::make($validate['senha']);
-        $usuario -> save();
+        $usuario->nome = $validate['nome'];
+        $usuario->email = $validate['email'];
+        $usuario->senha = Hash::make($validate['senha']);
+        $usuario->acesso = $validate['acesso'] ?? 'usuario';
+        $usuario->save();
 
-        return ['message' => 'Usuário criado com sucesso', 'usuário' => $usuario -> toArray()];
+        return ['message' => 'Usuário criado com sucesso', 'usuário' => $usuario->toArray()];
     }
 
     public function atualizar(Request $request, int $id)
     {
-        $validate = $request -> validate([
-            'nome' => ['required', 'string'],
-            'email' => ['required', 'string', "unique:usuario,email,$id,id"],
-            'acesso' => ['required', 'string', 'in:usuario,admin'],
+        $usuario = Usuario::findOrFail($id);
+
+        $validate = $request->validate([
+            'nome' => ['sometimes', 'string', 'min:3', 'max:100'],
+            'email' => ['sometimes', 'string', 'email', "unique:usuario,email,$id,id"],
+            'acesso' => ['sometimes', 'string', 'in:usuario,admin'],
         ]);
 
-        $usuario = Usuario::find($id);
-            if (!$usuario){
-                return ['message' => 'Usuário não encontrado'];
-            }
-        $usuario -> nome =  $validate['nome'];
-        $usuario -> email =  $validate['email'];
-        $usuario->acesso = $validate['acesso'];
-        $usuario -> save();
+        $usuario->update($validate);
 
-        return ['message' => 'Usuário atualizado com sucesso', 'usuário' => $usuario -> toArray()];
+        return ['message' => 'Usuário atualizado com sucesso', 'usuário' => $usuario->toArray()];
     }
 
     public function deletar(int $id)
     {
-        $evento = Usuario::find($id);
-        $evento -> delete($id);
+        $usuario = Usuario::findOrFail($id);
+        $usuario->delete();
         
-        return ['message' => 'Usuário deletado com sucesso' . $id];
+        return ['message' => 'Usuário deletado com sucesso (soft delete)'];
     }
 
     public function destroy(int $id)
     {
-        $evento = Usuario::withTrashed() -> find($id);
-        $evento -> forceDelete($id);
+        $usuario = Usuario::withTrashed()->findOrFail($id);
+        $usuario->forceDelete();
 
-        return ['message' => 'Usuário destruido com sucesso' . $id];
+        return ['message' => 'Usuário destruído com sucesso'];
     }
 
     public function restore(int $id)
     {
-        $evento = Usuario::withTrashed($id);
-        $evento -> restore($id);
+        $usuario = Usuario::withTrashed()->findOrFail($id);
+        $usuario->restore();
 
-        return ['message' => 'Usuário restaurado com sucesso' . $id]; 
+        return ['message' => 'Usuário restaurado com sucesso'];
     }
 }

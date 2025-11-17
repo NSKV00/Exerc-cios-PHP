@@ -10,16 +10,19 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Fila extends Model
 {
     use SoftDeletes;
+
     protected $table = 'fila_compra';
     protected $primaryKey = 'id';
-
-    public function Compra(): HasMany
-    {
-        return $this -> hasMany(Compra::class);
-    }
+    protected $fillable = ['usuario_id', 'posicao'];
+    public $timestamps = true;
 
     public function Usuario(): BelongsTo
     {
-        return $this -> belongsTo(Usuario::class);
+        return $this->belongsTo(Usuario::class, 'usuario_id');
+    }
+
+    public function Compras(): HasMany
+    {
+        return $this->hasMany(Compra::class, 'fila_id');
     }
 }

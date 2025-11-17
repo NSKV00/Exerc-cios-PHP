@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
     //return json_encode(['massage' => 'API laravel']);
-    return ['massage' => 'API laravel'];
+    return ['message' => 'API laravel'];
 });
 
 Route::prefix('usuario') -> group(function (){
@@ -27,7 +27,7 @@ Route::prefix('fila') -> group(function (){
     Route::post('/criar/{id}', [FilaController::class, 'criar']);
     Route::delete('/deletar/{id}', [FilaController::class, 'deletar']);
     Route::delete('/destroy/{id}', [FilaController::class, 'destroy']);
-    Route::post('/restore/{id}' , [FilaController::class, 'restore']);
+    Route::post('/restore/{id}', [FilaController::class, 'restore']);
     Route::post('/moveraposcompra/{id}', [FilaController::class, 'moverAposCompra']);
 });
 

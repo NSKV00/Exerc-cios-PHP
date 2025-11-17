@@ -9,18 +9,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Usuario extends Model
 {
     use SoftDeletes;
+
     protected $table = 'usuario';
     protected $primaryKey = 'id';
+    protected $fillable = ['nome', 'email', 'senha', 'acesso'];
     protected $hidden = ['senha'];
-    public $timestamps = false;
+    public $timestamps = true;
 
     public function Fila(): HasMany
     {
-        return $this -> hasMany(Fila::class, );
+        return $this->hasMany(Fila::class, 'usuario_id');
     }
 
-    public function Compra(): HasMany
+    public function Compras(): HasMany
     {
-        return $this -> hasMany(Compra::class);
+        return $this->hasMany(Compra::class, 'usuario_id');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CompraRequest;
 use App\Models\Compra;
 use App\Models\Fila;
 use App\Models\Usuario;
@@ -14,7 +15,7 @@ class CompraController extends Controller
      */
     public function listar()
     {
-        $compras = Compra::with(['usuario', 'fila'])
+        $compras = Compra::with(['Usuario', 'Fila'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -29,11 +30,7 @@ class CompraController extends Controller
      */
     public function buscarId(int $id)
     {
-        $compra = Compra::with(['usuario', 'fila'])->find($id);
-
-        if (!$compra) {
-            return ['message' => 'Compra não encontrada'];
-        }
+        $compra = Compra::with(['Usuario', 'Fila'])->findOrFail($id);
 
         return [
             'message' => "Compra encontrada ID: $id",
@@ -46,17 +43,13 @@ class CompraController extends Controller
      * - O usuário precisa estar na fila
      * - Após a compra, o usuário é movido para o fim da fila
      */
-    public function criar(Request $request)
+    public function criar(CompraRequest $request)
     {
-        $validate = $request->validate([
-            'usuario_id' => ['required', 'integer'],
-            'valor' => ['required', 'numeric'],
-            'descricao' => ['nullable', 'string']
-        ]);
+        $validate = $request->validated();
 
         $usuarioId = $validate['usuario_id'];
 
-        // Verifica se o usuário está ativo na fila
+        // Verifica se usuário está na fila
         $fila = Fila::where('usuario_id', $usuarioId)
             ->whereNull('deleted_at')
             ->orderBy('posicao', 'asc')
@@ -67,14 +60,14 @@ class CompraController extends Controller
         }
 
         // Cria a compra
-        $compra = Compra::create([
-            'usuario_id' => $usuarioId,
-            'fila_id' => $fila->id,
-            'valor' => $validate['valor'],
-            'descricao' => $validate['descricao'] ?? null,
-        ]);
+        $compra = new Compra();
+        $compra->usuario_id = $usuarioId;
+        $compra->fila_id = $fila->id;
+        $compra->cafe_qnd = $validate['cafe_qnd'];
+        $compra->filtro_qnd = $validate['filtro_qnd'];
+        $compra->save();
 
-        // Move o usuário para o final da fila (SoftDelete e recriação)
+        // Move para o final da fila
         app(FilaController::class)->moverAposCompra($usuarioId);
 
         return [
@@ -84,16 +77,31 @@ class CompraController extends Controller
     }
 
     /**
+     * Atualizar dados da compra
+     */
+    public function atualizar(Request $request, int $id)
+    {
+        $compra = Compra::findOrFail($id);
+
+        $validate = $request->validate([
+            'cafe_qnd' => ['sometimes', 'integer', 'min:1'],
+            'filtro_qnd' => ['sometimes', 'integer', 'min:0']
+        ]);
+
+        $compra->update($validate);
+
+        return [
+            'message' => 'Compra atualizada com sucesso',
+            'compra' => $compra->toArray()
+        ];
+    }
+
+    /**
      * SoftDelete de uma compra
      */
     public function deletar(int $id)
     {
-        $compra = Compra::find($id);
-
-        if (!$compra) {
-            return ['message' => 'Compra não encontrada'];
-        }
-
+        $compra = Compra::findOrFail($id);
         $compra->delete();
 
         return ['message' => 'Compra removida (soft delete) com sucesso'];
@@ -104,12 +112,7 @@ class CompraController extends Controller
      */
     public function destroy(int $id)
     {
-        $compra = Compra::withTrashed()->find($id);
-
-        if (!$compra) {
-            return ['message' => 'Compra não encontrada (nem entre as deletadas)'];
-        }
-
+        $compra = Compra::withTrashed()->findOrFail($id);
         $compra->forceDelete();
 
         return ['message' => 'Compra removida permanentemente'];
@@ -120,14 +123,12 @@ class CompraController extends Controller
      */
     public function restore(int $id)
     {
-        $compra = Compra::withTrashed()->find($id);
-
-        if (!$compra) {
-            return ['message' => 'Compra não encontrada para restauração'];
-        }
-
+        $compra = Compra::withTrashed()->findOrFail($id);
         $compra->restore();
 
-        return ['message' => 'Compra restaurada com sucesso'];
+        return [
+            'message' => 'Compra restaurada com sucesso',
+            'compra' => $compra->toArray()
+        ];
     }
 }
