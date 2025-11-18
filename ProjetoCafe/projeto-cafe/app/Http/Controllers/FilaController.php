@@ -21,15 +21,15 @@ class FilaController extends Controller
 
     public function buscarId(int $id)
     {
-        $fila = Fila::with('Usuario')->findOrFail($id);
+        $fila = Usuario::with('fila')->findOrFail($id);
+        
         return ['message' => "Buscando usuário na fila, ID: $id", 'fila' => $fila->toArray()];
     }
 
     public function criar(FilaRequest $request, int $id)
     {
-        $usuario = Usuario::findOrFail($id);
+        $fila = Usuario::findOrFail($id);
 
-        // Verifica se já está na fila
         $existente = Fila::where('usuario_id', $id)
             ->whereNull('deleted_at')
             ->first();
@@ -38,7 +38,6 @@ class FilaController extends Controller
             return ['message' => 'Usuário já está na fila', 'fila' => $existente->toArray()];
         }
 
-        // Calcula próxima posição
         $ultimaFila = Fila::whereNull('deleted_at')
             ->orderBy('posicao', 'desc')
             ->first();
@@ -60,7 +59,6 @@ class FilaController extends Controller
         
         $fila->delete();
         
-        // Reorganiza as posições
         Fila::whereNull('deleted_at')
             ->where('posicao', '>', $posicao)
             ->decrement('posicao');
@@ -98,12 +96,10 @@ class FilaController extends Controller
         $posicaoAtual = $filaAtual->posicao;
         $filaAtual->delete();
 
-        // Reorganiza posições restantes
         Fila::whereNull('deleted_at')
             ->where('posicao', '>', $posicaoAtual)
             ->decrement('posicao');
 
-        // Adiciona ao final
         $ultimaFila = Fila::whereNull('deleted_at')
             ->orderBy('posicao', 'desc')
             ->first();

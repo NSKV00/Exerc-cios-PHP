@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Sanctum\HasApiTokens;
 
 class Usuario extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasApiTokens;
 
     protected $table = 'usuario';
     protected $primaryKey = 'id';
@@ -24,5 +25,10 @@ class Usuario extends Model
     public function Compras(): HasMany
     {
         return $this->hasMany(Compra::class, 'usuario_id');
+    }
+
+    public function LogsAcesso(): HasMany
+    {
+        return $this->hasMany(LogUsuario::class, 'usuario_id');
     }
 }

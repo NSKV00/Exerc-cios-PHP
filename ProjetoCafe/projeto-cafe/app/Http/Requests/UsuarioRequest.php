@@ -16,7 +16,7 @@ class UsuarioRequest extends FormRequest
         return [
             'nome' => ['required', 'string', 'min:3', 'max:100'],
             'email' => ['required', 'email', 'unique:usuario,email'],
-            'senha' => ['required', 'string', 'min:6', 'max:255'],
+            'senha' => ['required', 'string', 'min:8', 'max:255'],
             'acesso' => ['nullable', 'string', 'in:usuario,admin'],
         ];
     }
@@ -30,7 +30,7 @@ class UsuarioRequest extends FormRequest
             'email.email' => 'O email deve ser válido.',
             'email.unique' => 'Este email já está registrado.',
             'senha.required' => 'A senha é obrigatória.',
-            'senha.min' => 'A senha deve ter no mínimo 6 caracteres.',
+            'senha.min' => 'A senha deve ter no mínimo 8 caracteres.',
         ];
     }
 }

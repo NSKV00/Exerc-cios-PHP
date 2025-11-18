@@ -10,75 +10,49 @@ use Illuminate\Http\Request;
 
 class CompraController extends Controller
 {
-    /**
-     * Listar todas as compras
-     */
     public function listar()
     {
-        $compras = Compra::with(['Usuario', 'Fila'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $compras = Compra::with(['usuario', 'fila'])
+            -> orderBy('created_at', 'desc')
+            -> get();
 
-        return [
-            'message' => 'Listando todas as compras',
-            'compras' => $compras->toArray()
-        ];
+        return ['message' => 'Listando todas as compras', 'compras' => $compras->toArray()];
     }
 
-    /**
-     * Buscar compra por ID
-     */
     public function buscarId(int $id)
     {
-        $compra = Compra::with(['Usuario', 'Fila'])->findOrFail($id);
+        $compra = Compra::with(['usuario', 'fila']) -> findOrFail($id);
 
-        return [
-            'message' => "Compra encontrada ID: $id",
-            'compra' => $compra->toArray()
-        ];
+        return ['message' => "Compra encontrada ID: $id", 'compra' => $compra -> toArray()];
     }
 
-    /**
-     * Criar nova compra
-     * - O usuário precisa estar na fila
-     * - Após a compra, o usuário é movido para o fim da fila
-     */
     public function criar(CompraRequest $request)
     {
-        $validate = $request->validated();
+        $validate = $request -> validated();
 
         $usuarioId = $validate['usuario_id'];
 
-        // Verifica se usuário está na fila
         $fila = Fila::where('usuario_id', $usuarioId)
-            ->whereNull('deleted_at')
-            ->orderBy('posicao', 'asc')
-            ->first();
+            -> whereNull('deleted_at')
+            -> orderBy('posicao', 'asc')
+            -> first();
 
         if (!$fila) {
             return ['message' => 'Usuário não está ativo na fila.'];
         }
 
-        // Cria a compra
         $compra = new Compra();
-        $compra->usuario_id = $usuarioId;
-        $compra->fila_id = $fila->id;
-        $compra->cafe_qnd = $validate['cafe_qnd'];
-        $compra->filtro_qnd = $validate['filtro_qnd'];
-        $compra->save();
+        $compra -> usuario_id = $usuarioId;
+        $compra -> fila_id = $fila->id;
+        $compra -> cafe_qnd = $validate['cafe_qnd'];
+        $compra -> filtro_qnd = $validate['filtro_qnd'];
+        $compra -> save();
 
-        // Move para o final da fila
-        app(FilaController::class)->moverAposCompra($usuarioId);
+        app(FilaController::class) -> moverAposCompra($usuarioId);
 
-        return [
-            'message' => 'Compra registrada com sucesso e fila atualizada.',
-            'compra' => $compra->toArray()
-        ];
+        return ['message' => 'Compra registrada com sucesso e fila atualizada.','compra' => $compra -> toArray()];
     }
 
-    /**
-     * Atualizar dados da compra
-     */
     public function atualizar(Request $request, int $id)
     {
         $compra = Compra::findOrFail($id);
@@ -88,47 +62,88 @@ class CompraController extends Controller
             'filtro_qnd' => ['sometimes', 'integer', 'min:0']
         ]);
 
-        $compra->update($validate);
+        $compra -> update($validate);
 
         return [
             'message' => 'Compra atualizada com sucesso',
-            'compra' => $compra->toArray()
+            'compra' => $compra -> toArray()
         ];
     }
 
-    /**
-     * SoftDelete de uma compra
-     */
     public function deletar(int $id)
     {
         $compra = Compra::findOrFail($id);
-        $compra->delete();
+        $usuarioId = $compra->usuario_id;
+        $filaId = $compra->fila_id;
+        
+        // Soft delete da compra
+        $compra -> delete();
+        
+        // Restaura o usuário à fila anterior
+        $this->restaurarUsuarioNaFila($usuarioId, $filaId);
 
         return ['message' => 'Compra removida (soft delete) com sucesso'];
     }
 
-    /**
-     * Exclusão permanente
-     */
     public function destroy(int $id)
     {
-        $compra = Compra::withTrashed()->findOrFail($id);
-        $compra->forceDelete();
+        $compra = Compra::withTrashed() -> findOrFail($id);
+        $usuarioId = $compra->usuario_id;
+        $filaId = $compra->fila_id;
+        
+        // Force delete da compra
+        $compra -> forceDelete();
+        
+        // Restaura o usuário à fila anterior
+        $this->restaurarUsuarioNaFila($usuarioId, $filaId);
 
         return ['message' => 'Compra removida permanentemente'];
     }
 
-    /**
-     * Restaurar compra deletada
-     */
     public function restore(int $id)
     {
-        $compra = Compra::withTrashed()->findOrFail($id);
-        $compra->restore();
+        $compra = Compra::withTrashed() -> findOrFail($id);
+        $compra -> restore();
 
-        return [
-            'message' => 'Compra restaurada com sucesso',
-            'compra' => $compra->toArray()
-        ];
+        return ['message' => 'Compra restaurada com sucesso', 'compra' => $compra -> toArray()];
+    }
+
+    private function restaurarUsuarioNaFila(int $usuarioId, int $filaId)
+    {
+        // Busca a fila anterior do usuário
+        $filaAnterior = Fila::withTrashed()->findOrFail($filaId);
+        
+        // Busca a fila atual do usuário (após a compra)
+        $filaAtual = Fila::where('usuario_id', $usuarioId)
+            ->whereNull('deleted_at')
+            ->first();
+
+        if (!$filaAtual || $filaAtual->id === $filaAnterior->id) {
+            return;
+        }
+
+        // Posição anterior
+        $posicaoAnterior = $filaAnterior->posicao;
+        $posicaoAtual = $filaAtual->posicao;
+
+        // Remove usuário da posição atual
+        $filaAtual->delete();
+
+        // Reorganiza as posições depois da posição atual
+        Fila::whereNull('deleted_at')
+            ->where('posicao', '>', $posicaoAtual)
+            ->decrement('posicao');
+
+        // Restaura usuário na posição anterior
+        $filaAnterior->restore();
+        
+        // Reorganiza as posições após a posição anterior inserida
+        Fila::whereNull('deleted_at')
+            ->where('posicao', '>=', $posicaoAnterior)
+            ->where('id', '!=', $filaAnterior->id)
+            ->increment('posicao');
+
+        $filaAnterior->posicao = $posicaoAnterior;
+        $filaAnterior->save();
     }
 }

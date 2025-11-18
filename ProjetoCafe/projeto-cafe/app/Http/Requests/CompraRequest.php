@@ -16,7 +16,7 @@ class CompraRequest extends FormRequest
         return [
             'usuario_id' => ['required', 'integer', 'exists:usuario,id'],
             'cafe_qnd' => ['required', 'integer', 'min:1'],
-            'filtro_qnd' => ['required', 'integer', 'min:0'],
+            'filtro_qnd' => ['integer', 'min:0'],
         ];
     }
 
