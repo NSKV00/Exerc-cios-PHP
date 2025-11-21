@@ -16,7 +16,7 @@ class UsuarioRequest extends FormRequest
         return [
             'nome' => ['required', 'string', 'min:3', 'max:100'],
             'email' => ['required', 'email', 'unique:usuario,email'],
-            'senha' => ['required', 'string', 'min:8', 'max:255'],
+            'senha' => ['required', 'string', 'min:8', 'max:50'],
             'acesso' => ['nullable', 'string', 'in:usuario,admin'],
         ];
     }

@@ -76,10 +76,8 @@ class CompraController extends Controller
         $usuarioId = $compra->usuario_id;
         $filaId = $compra->fila_id;
         
-        // Soft delete da compra
         $compra -> delete();
         
-        // Restaura o usuário à fila anterior
         $this->restaurarUsuarioNaFila($usuarioId, $filaId);
 
         return ['message' => 'Compra removida (soft delete) com sucesso'];
@@ -91,10 +89,8 @@ class CompraController extends Controller
         $usuarioId = $compra->usuario_id;
         $filaId = $compra->fila_id;
         
-        // Force delete da compra
         $compra -> forceDelete();
         
-        // Restaura o usuário à fila anterior
         $this->restaurarUsuarioNaFila($usuarioId, $filaId);
 
         return ['message' => 'Compra removida permanentemente'];
@@ -110,10 +106,8 @@ class CompraController extends Controller
 
     private function restaurarUsuarioNaFila(int $usuarioId, int $filaId)
     {
-        // Busca a fila anterior do usuário
         $filaAnterior = Fila::withTrashed()->findOrFail($filaId);
         
-        // Busca a fila atual do usuário (após a compra)
         $filaAtual = Fila::where('usuario_id', $usuarioId)
             ->whereNull('deleted_at')
             ->first();
@@ -122,22 +116,17 @@ class CompraController extends Controller
             return;
         }
 
-        // Posição anterior
         $posicaoAnterior = $filaAnterior->posicao;
         $posicaoAtual = $filaAtual->posicao;
 
-        // Remove usuário da posição atual
         $filaAtual->delete();
 
-        // Reorganiza as posições depois da posição atual
         Fila::whereNull('deleted_at')
             ->where('posicao', '>', $posicaoAtual)
             ->decrement('posicao');
 
-        // Restaura usuário na posição anterior
         $filaAnterior->restore();
         
-        // Reorganiza as posições após a posição anterior inserida
         Fila::whereNull('deleted_at')
             ->where('posicao', '>=', $posicaoAnterior)
             ->where('id', '!=', $filaAnterior->id)
