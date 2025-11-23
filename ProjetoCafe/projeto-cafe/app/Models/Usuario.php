@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\SerializesDatetime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Usuario extends Model
 {
-    use SoftDeletes, HasApiTokens;
+    use SoftDeletes, HasApiTokens, SerializesDatetime;
 
     protected $table = 'usuario';
     protected $primaryKey = 'id';

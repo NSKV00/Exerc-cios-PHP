@@ -5,37 +5,38 @@ namespace App\Http\Controllers;
 use App\Http\Requests\FilaRequest;
 use App\Models\Fila;
 use App\Models\Usuario;
+use App\Services\ResponseService;
 use Illuminate\Http\Request;
 
 class FilaController extends Controller
 {
     public function listar()
     {
-        $fila = Fila::with('Usuario')
+        $fila = Fila::with('Usuario', 'Compras')
             ->whereNull('deleted_at')
             ->orderBy('posicao', 'asc')
             ->get();
 
-        return ['message' => 'Listando fila de usuários', 'fila' => $fila->toArray()];
+        return ResponseService::success('Listando fila de usuários', $fila);
     }
 
     public function buscarId(int $id)
     {
         $fila = Usuario::with('fila')->findOrFail($id);
         
-        return ['message' => "Buscando usuário na fila, ID: $id", 'fila' => $fila->toArray()];
+        return ResponseService::success("Buscando usuário na fila, ID: $id", $fila);
     }
 
-    public function criar(FilaRequest $request, int $id)
+    public function criar(FilaRequest $request)
     {
-        $fila = Usuario::findOrFail($id);
+        $fila = Usuario::findOrFail($request->usuario_id);
 
-        $existente = Fila::where('usuario_id', $id)
+        $existente = Fila::where('usuario_id', $request->usuario_id)
             ->whereNull('deleted_at')
             ->first();
 
         if ($existente) {
-            return ['message' => 'Usuário já está na fila', 'fila' => $existente->toArray()];
+            return ResponseService::error('Usuário já está na fila', null, 409);
         }
 
         $ultimaFila = Fila::whereNull('deleted_at')
@@ -45,11 +46,11 @@ class FilaController extends Controller
         $novaPosicao = $ultimaFila ? $ultimaFila->posicao + 1 : 1;
 
         $fila = new Fila();
-        $fila->usuario_id = $id;
+        $fila->usuario_id = $request->usuario_id;
         $fila->posicao = $novaPosicao;
         $fila->save();
 
-        return ['message' => 'Usuário adicionado à fila com sucesso', 'fila' => $fila->toArray()];
+        return ResponseService::success('Usuário adicionado à fila com sucesso', $fila, 201);
     }
 
     public function deletar(int $id)
@@ -63,7 +64,7 @@ class FilaController extends Controller
             ->where('posicao', '>', $posicao)
             ->decrement('posicao');
 
-        return ['message' => 'Usuário removido (soft delete) da fila'];
+        return ResponseService::success('Usuário removido (soft delete) da fila', null);
     }
 
     public function destroy(int $id)
@@ -71,7 +72,7 @@ class FilaController extends Controller
         $fila = Fila::withTrashed()->findOrFail($id);
         $fila->forceDelete();
 
-        return ['message' => 'Usuário removido permanentemente da fila'];
+        return ResponseService::success('Usuário removido permanentemente da fila', null);
     }
 
     public function restore(int $id)
@@ -80,7 +81,7 @@ class FilaController extends Controller
         $fila->restore();
         $this->reorganizarFila();
 
-        return ['message' => 'Usuário restaurado à fila com sucesso'];
+        return ResponseService::success('Usuário restaurado à fila com sucesso', $fila);
     }
 
     public function moverAposCompra(int $usuarioId)
@@ -90,7 +91,7 @@ class FilaController extends Controller
             ->first();
 
         if (!$filaAtual) {
-            return ['message' => 'Usuário não encontrado na fila'];
+            return null;
         }
 
         $posicaoAtual = $filaAtual->posicao;
@@ -111,7 +112,7 @@ class FilaController extends Controller
         $novaFila->posicao = $novaPosicao;
         $novaFila->save();
 
-        return ['message' => 'Usuário movido para o final da fila após compra', 'fila' => $novaFila->toArray()];
+        return $novaFila;
     }
 
     private function reorganizarFila()
@@ -126,5 +127,34 @@ class FilaController extends Controller
             $item->save();
             $pos++;
         }
+    }
+
+    public function proximo()
+    {
+        $fila = Fila::whereNull('deleted_at')
+            ->orderBy('posicao', 'asc')
+            ->first();
+        
+        if (!$fila) {
+            return ResponseService::error('Fila vazia', null, 404);
+        }
+
+        return ResponseService::success('Próximo na fila', $fila->load('Usuario'));
+    }
+
+    public function posicaoUsuario($usuario_id)
+    {
+        $fila = Fila::where('usuario_id', $usuario_id)
+            ->whereNull('deleted_at')
+            ->first();
+        
+        if (!$fila) {
+            return ResponseService::error('Usuário não está na fila', null, 404);
+        }
+        
+        return ResponseService::success('Posição do usuário', [
+            'posicao' => $fila->posicao,
+            'usuario_id' => $usuario_id,
+        ]);
     }
 }

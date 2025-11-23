@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\SerializesDatetime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class LogUsuario extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, SerializesDatetime;
 
     protected $table = 'log_usuario';
     protected $primaryKey = 'id';

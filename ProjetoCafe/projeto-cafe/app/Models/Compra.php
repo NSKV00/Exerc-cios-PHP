@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\SerializesDatetime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Compra extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, SerializesDatetime;
 
     protected $table = 'compra';
     protected $primaryKey = 'id';
