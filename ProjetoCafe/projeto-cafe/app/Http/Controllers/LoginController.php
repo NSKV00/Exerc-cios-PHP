@@ -44,6 +44,7 @@ class LoginController extends Controller
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();
+        
         return ResponseService::success('Logout realizado com sucesso', null, 200);
     }
 
