@@ -13,6 +13,7 @@ class UsuarioController extends Controller
     public function listar()
     {
         $usuarios = Usuario::all();
+
         return ResponseService::success('Listando usuários', $usuarios);
     }
 
@@ -43,17 +44,31 @@ class UsuarioController extends Controller
         $validate = $request->validate([
             'nome' => ['sometimes', 'string', 'min:3', 'max:100', 'regex:/^[\p{L}\s\'-]+$/u'],
             'email' => ['sometimes', 'email:rfc,dns', "unique:usuario,email,$id,id", 'max:100'],
-            'acesso' => ['sometimes', 'string', 'in:usuario,admin'],
         ], [
             'nome.regex' => 'O nome pode conter apenas letras, espaços, hífens e apóstrofos.',
             'email.email' => 'O email deve ser um endereço válido.',
             'email.unique' => 'Este email já está registrado no sistema.',
-            'acesso.in' => 'O acesso deve ser "usuario" ou "admin".',
         ]);
 
         $usuario->update($validate);
 
         return ResponseService::success('Usuário atualizado com sucesso', $usuario);
+    }
+
+    public function atualizarAcesso(Request $request, int $id)
+    {
+        $usuario = Usuario::findOrFail($id);
+
+        $validate = $request->validate([
+            'acesso' => ['required', 'string', 'in:usuario,admin'],
+        ], [
+            'acesso.required' => 'O campo acesso é obrigatório.',
+            'acesso.in' => 'O acesso deve ser "usuario" ou "admin".',
+        ]);
+
+        $usuario->update($validate);
+
+        return ResponseService::success('Acesso do usuário atualizado com sucesso', $usuario);
     }
 
     public function deletar(int $id)

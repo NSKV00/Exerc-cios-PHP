@@ -13,6 +13,7 @@ Route::prefix('usuario') -> group(function (){
     Route::post('/criar', [UsuarioController::class, 'criar']);
     Route::middleware('auth:sanctum')->put('/atualizar/{id}', [UsuarioController::class, 'atualizar']);
     Route::middleware('auth:sanctum')->delete('/deletar/{id}', [UsuarioController::class, 'deletar']);
+    Route::middleware(['auth:sanctum', 'admin'])->put('/atualizarAcesso/{id}', [UsuarioController::class, 'atualizarAcesso']);
     Route::middleware(['auth:sanctum', 'admin'])->delete('/destroy/{id}', [UsuarioController::class, 'destroy']);
     Route::middleware(['auth:sanctum', 'admin'])->post('/restore/{id}', [UsuarioController::class, 'restore']);
 });
