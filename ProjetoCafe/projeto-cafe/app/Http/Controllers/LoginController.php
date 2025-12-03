@@ -65,12 +65,4 @@ class LoginController extends Controller
             ]
         ]);
     }
-
-    public function logAccess()
-    {
-        $log = LogUsuario::with('Usuario') ->get();
-        
-
-        return ResponseService::success('Logs de acesso recuperados com sucesso', $log);
-    }
 }
