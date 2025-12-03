@@ -13,18 +13,19 @@ class LogUsuario extends Model
 
     protected $table = 'log_usuario';
     protected $primaryKey = 'id';
-    protected $fillable = ['usuario_id', 'data_acesso'];
+    protected $fillable = ['data_acesso'];
     public $timestamps = true;
 
     protected function casts(): array
     {
         return [
             'data_acesso' => 'datetime',
+            'created_at' => 'datetime',
         ];
     }
 
     public function Usuario(): BelongsTo
     {
-        return $this->belongsTo(Usuario::class, 'usuario_id');
+        return $this->belongsTo(Usuario::class, 'nome');
     }
 }

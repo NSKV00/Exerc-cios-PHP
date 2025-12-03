@@ -44,4 +44,5 @@ Route::prefix('login') -> group(function (){
     Route::post('', [LoginController::class, 'login']);
     Route::middleware('auth:sanctum')->get('/verificarToken', [LoginController::class, 'verificarToken']);
     Route::middleware('auth:sanctum')->post('/logout', [LoginController::class, 'logout']);
+    Route::get('/logAccess', [LoginController::class, 'logAccess']);
 });
