@@ -22,5 +22,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+        // Registrar alias de middleware 'admin' para verificar campo 'acesso' do usuário
+        $router = $this->app->make(\Illuminate\Routing\Router::class);
+        $router->aliasMiddleware('admin', \App\Http\Middleware\Admin::class);
     }
 }

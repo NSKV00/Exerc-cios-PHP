@@ -6,7 +6,11 @@ use App\Http\Requests\UsuarioRequest;
 use App\Models\Usuario;
 use App\Services\ResponseService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class UsuarioController extends Controller
 {
@@ -57,18 +61,41 @@ class UsuarioController extends Controller
 
     public function atualizarAcesso(Request $request, int $id)
     {
-        $usuario = Usuario::findOrFail($id);
+        try {
+            $usuario = Usuario::find($id);
 
-        $validate = $request->validate([
-            'acesso' => ['required', 'string', 'in:usuario,admin'],
-        ], [
-            'acesso.required' => 'O campo acesso é obrigatório.',
-            'acesso.in' => 'O acesso deve ser "usuario" ou "admin".',
-        ]);
+            if (!$usuario) {
+                return ResponseService::error('Usuário não encontrado', null, 404);
+            }
 
-        $usuario->update($validate);
+            $validate = $request->validate([
+                'acesso' => ['required', 'string', 'in:usuario,admin'],
+            ], [
+                'acesso.required' => 'O campo acesso é obrigatório.',
+                'acesso.in' => 'O acesso deve ser "usuario" ou "admin".',
+            ]);
 
-        return ResponseService::success('Acesso do usuário atualizado com sucesso', $usuario);
+            $auth = Auth::user();
+            if ($auth && $auth->id === $usuario->id) {
+                return ResponseService::error('Alterar seu próprio nível de acesso não é permitido', null, 403);
+            }
+
+            $usuario->acesso = $validate['acesso'];
+            $usuario->save();
+
+            Log::info('Acesso de usuário atualizado', [
+                'admin_id' => $auth?->id,
+                'usuario_id' => $usuario->id,
+                'novo_acesso' => $usuario->acesso,
+            ]);
+
+            return ResponseService::success('Acesso do usuário atualizado com sucesso', $usuario);
+        } catch (ValidationException $ve) {
+            return ResponseService::error('Erro de validação', $ve->errors(), 422);
+        } catch (Throwable $e) {
+            Log::error('Erro em UsuarioController::atualizarAcesso - ' . $e->getMessage(), ['exception' => $e]);
+            return ResponseService::error('Erro interno ao atualizar acesso do usuário', null, 500);
+        }
     }
 
     public function deletar(int $id)
