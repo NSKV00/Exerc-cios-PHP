@@ -138,11 +138,9 @@ class FilaController extends Controller
                 ->first();
 
             if (!$fila) {
-                // Retornamos success com data null para facilitar consumo no frontend
                 return ResponseService::success('Fila vazia', null);
             }
 
-            // Carrega relação com nome canônico (minúsculo) e monte um payload simples e previsível
             $fila->load('usuario');
             $usuario = $fila->usuario;
 
@@ -160,7 +158,6 @@ class FilaController extends Controller
 
             return ResponseService::success('Próximo na fila', $payload);
         } catch (\Throwable $e) {
-            // Log completo para debug sem vazar stack para o cliente
             Log::error('Erro em FilaController::proximo', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),

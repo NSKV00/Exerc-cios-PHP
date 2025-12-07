@@ -33,7 +33,7 @@ class LogUsuarioController extends Controller
     public function filtrar(Request $request)
     {
         $usuarioId = $request->query('usuario_id');
-        $tipoEvento = $request->query('tipo_evento'); // 'login' ou 'logout'
+        $tipoEvento = $request->query('tipo_evento');
         $dataInicio = $request->query('data_inicio');
         $dataFim = $request->query('data_fim');
 
