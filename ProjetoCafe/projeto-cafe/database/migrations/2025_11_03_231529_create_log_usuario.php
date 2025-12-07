@@ -6,23 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('log_usuario', function (Blueprint $table) {
             $table -> id();
-            $table -> foreignId('usuario_id') -> constraints('usuario');
-            $table -> dateTime('data_acesso') -> nullable(false);
+            $table -> foreignId('usuario_id') -> constrained('usuario') -> onDelete('cascade');
+            $table -> enum('tipo_evento', ['login', 'logout']) -> default('login');
+            $table -> dateTime('data_evento') -> nullable(false);
+            $table -> string('ip_address') -> nullable();
+            $table -> string('user_agent') -> nullable();
             $table -> timestamps();
             $table -> softDeletes();
+            $table -> index(['usuario_id', 'data_evento']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('log_usuario');
