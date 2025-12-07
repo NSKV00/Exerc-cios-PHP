@@ -45,3 +45,13 @@ Route::prefix('login') -> group(function (){
     Route::middleware('auth:sanctum')->get('/verificarToken', [LoginController::class, 'verificarToken']);
     Route::middleware('auth:sanctum')->post('/logout', [LoginController::class, 'logout']);
 });
+
+Route::prefix('logs') -> group(function (){
+    Route::middleware(['auth:sanctum', 'admin'])->get('', [LogUsuarioController::class, 'listarTodos']);
+    Route::middleware(['auth:sanctum', 'admin'])->get('/usuario/{usuarioId}', [LogUsuarioController::class, 'listarPorUsuario']);
+    Route::middleware(['auth:sanctum', 'admin'])->get('/filtrar', [LogUsuarioController::class, 'filtrar']);
+    Route::middleware(['auth:sanctum', 'admin'])->get('/relatorio/periodo', [LogUsuarioController::class, 'relatorioPorPeriodo']);
+    Route::middleware(['auth:sanctum', 'admin'])->get('/usuarios/ativos', [LogUsuarioController::class, 'usuariosMaisAtivos']);
+    Route::middleware(['auth:sanctum', 'admin'])->get('/usuario/{usuarioId}/ultimo-login', [LogUsuarioController::class, 'ultimoLoginDoUsuario']);
+    Route::middleware(['auth:sanctum', 'admin'])->get('/usuarios/online', [LogUsuarioController::class, 'usuariosOnline']);
+});

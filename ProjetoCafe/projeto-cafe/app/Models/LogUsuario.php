@@ -13,13 +13,13 @@ class LogUsuario extends Model
 
     protected $table = 'log_usuario';
     protected $primaryKey = 'id';
-    protected $fillable = ['usuario_id', 'data_acesso'];
+    protected $fillable = ['usuario_id', 'tipo_evento', 'data_evento', 'ip_address', 'user_agent'];
     public $timestamps = true;
 
     protected function casts(): array
     {
         return [
-            'data_acesso' => 'datetime',
+            'data_evento' => 'datetime',
             'usuario_id' => 'integer',
         ];
     }

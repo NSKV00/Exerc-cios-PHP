@@ -25,7 +25,10 @@ class LoginController extends Controller
 
         LogUsuario::create([
             'usuario_id' => $usuario->id,
-            'data_acesso' => now(),
+            'tipo_evento' => 'login',
+            'data_evento' => now(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
         ]);
 
         $token = $usuario->createToken('auth_token')->plainTextToken;
@@ -43,6 +46,16 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+        $usuario = $request->user();
+
+        LogUsuario::create([
+            'usuario_id' => $usuario->id,
+            'tipo_evento' => 'logout',
+            'data_evento' => now(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         $request->user()->tokens()->delete();
         
         return ResponseService::success('Logout realizado com sucesso', null, 200);
@@ -64,5 +77,10 @@ class LoginController extends Controller
                 'acesso' => $usuario->acesso,
             ]
         ]);
+    }
+
+    public function logUser()
+    {
+        
     }
 }
