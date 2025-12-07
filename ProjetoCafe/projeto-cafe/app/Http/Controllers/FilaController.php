@@ -7,6 +7,8 @@ use App\Models\Fila;
 use App\Models\Usuario;
 use App\Services\ResponseService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class FilaController extends Controller
 {
@@ -86,33 +88,38 @@ class FilaController extends Controller
 
     public function moverAposCompra(int $usuarioId)
     {
-        $filaAtual = Fila::where('usuario_id', $usuarioId)
-            ->whereNull('deleted_at')
-            ->first();
+        try {
+            $filaAtual = Fila::where('usuario_id', $usuarioId)
+                ->whereNull('deleted_at')
+                ->first();
 
-        if (!$filaAtual) {
-            return null;
+            if (!$filaAtual) {
+                return ResponseService::error('Usuário não está na fila', null, 404);
+            }
+
+            $posicaoAtual = $filaAtual->posicao;
+            $filaAtual->delete();
+
+            Fila::whereNull('deleted_at')
+                ->where('posicao', '>', $posicaoAtual)
+                ->decrement('posicao');
+
+            $ultimaFila = Fila::whereNull('deleted_at')
+                ->orderBy('posicao', 'desc')
+                ->first();
+            
+            $novaPosicao = $ultimaFila ? $ultimaFila->posicao + 1 : 1;
+
+            $novaFila = new Fila();
+            $novaFila->usuario_id = $usuarioId;
+            $novaFila->posicao = $novaPosicao;
+            $novaFila->save();
+
+            return ResponseService::success('Usuário movido no final da fila', $novaFila);
+        } catch (Throwable $e) {
+            Log::error('Erro em FilaController::moverAposCompra - ' . $e->getMessage(), ['exception' => $e]);
+            return ResponseService::error('Erro interno ao mover usuário na fila', null, 500);
         }
-
-        $posicaoAtual = $filaAtual->posicao;
-        $filaAtual->delete();
-
-        Fila::whereNull('deleted_at')
-            ->where('posicao', '>', $posicaoAtual)
-            ->decrement('posicao');
-
-        $ultimaFila = Fila::whereNull('deleted_at')
-            ->orderBy('posicao', 'desc')
-            ->first();
-        
-        $novaPosicao = $ultimaFila ? $ultimaFila->posicao + 1 : 1;
-
-        $novaFila = new Fila();
-        $novaFila->usuario_id = $usuarioId;
-        $novaFila->posicao = $novaPosicao;
-        $novaFila->save();
-
-        return $novaFila;
     }
 
     private function reorganizarFila()
@@ -131,30 +138,42 @@ class FilaController extends Controller
 
     public function proximo()
     {
-        $fila = Fila::whereNull('deleted_at')
-            ->orderBy('posicao', 'asc')
-            ->first();
-        
-        if (!$fila) {
-            return ResponseService::error('Fila vazia', null, 404);
-        }
+        try {
+            $fila = Fila::whereNull('deleted_at')
+                ->orderBy('posicao', 'asc')
+                ->first();
 
-        return ResponseService::success('Próximo na fila', $fila->load('Usuario'));
+            if (!$fila) {
+                return ResponseService::error('Fila vazia', null, 404);
+            }
+
+            $fila->load('Usuario');
+
+            return ResponseService::success('Próximo na fila', $fila);
+        } catch (Throwable $e) {
+            Log::error('Erro em FilaController::proximo - ' . $e->getMessage(), ['exception' => $e]);
+            return ResponseService::error('Erro interno ao buscar próximo na fila', null, 500);
+        }
     }
 
     public function posicaoUsuario($usuario_id)
     {
-        $fila = Fila::where('usuario_id', $usuario_id)
-            ->whereNull('deleted_at')
-            ->first();
-        
-        if (!$fila) {
-            return ResponseService::error('Usuário não está na fila', null, 404);
+        try {
+            $fila = Fila::where('usuario_id', $usuario_id)
+                ->whereNull('deleted_at')
+                ->first();
+
+            if (!$fila) {
+                return ResponseService::error('Usuário não está na fila', null, 404);
+            }
+
+            return ResponseService::success('Posição do usuário', [
+                'posicao' => $fila->posicao,
+                'usuario_id' => $usuario_id,
+            ]);
+        } catch (Throwable $e) {
+            Log::error('Erro em FilaController::posicaoUsuario - ' . $e->getMessage(), ['exception' => $e]);
+            return ResponseService::error('Erro interno ao buscar posição do usuário', null, 500);
         }
-        
-        return ResponseService::success('Posição do usuário', [
-            'posicao' => $fila->posicao,
-            'usuario_id' => $usuario_id,
-        ]);
     }
 }

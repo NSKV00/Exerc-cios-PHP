@@ -4,6 +4,7 @@ use App\Http\Controllers\CompraController;
 use App\Http\Controllers\FilaController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\LogUsuarioController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
