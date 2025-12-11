@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\FilaRequest;
+use App\Http\Requests\UsuarioRequest;
 use App\Models\Fila;
 use App\Models\Usuario;
 use App\Services\ResponseService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class FilaController extends Controller
@@ -28,8 +30,26 @@ class FilaController extends Controller
         return ResponseService::success("Buscando usuário na fila, ID: $id", $fila);
     }
 
-    public function criar(FilaRequest $request)
+    public function criar(FilaRequest $request, int $id)
     {
+        $retornar = Fila::onlyTrashed()
+            ->where('usuario_id', $id)
+            ->orderBy('deleted_at', 'desc')
+            ->first();
+
+        if ($retornar) {
+            DB::transaction(function() use($retornar){
+                $oldPos = (int) $retornar->posicao;
+
+                Fila::whereNull('deleted_at')
+                    ->where('posicao', '>=', $oldPos)
+                    ->increment('posicao');
+                $retornar -> restore();
+            });
+            $retornar -> load('usuario');
+            return ResponseService::success('Usuário restaurado na fila', $retornar, 200);
+        }
+
         $fila = Usuario::findOrFail($request->usuario_id);
 
         $existente = Fila::where('usuario_id', $request->usuario_id)
@@ -72,8 +92,9 @@ class FilaController extends Controller
     {
         $fila = Fila::withTrashed()->findOrFail($id);
         $fila->forceDelete();
+        $this->reorganizarFila();
 
-        return ResponseService::success('Usuário removido permanentemente da fila', null);
+        return ResponseService::success('Usuário removido permanentemente da fila', $fila);
     }
 
     public function restore(int $id)

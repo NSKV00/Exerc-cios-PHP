@@ -22,7 +22,7 @@ Route::prefix('usuario') -> group(function (){
 Route::prefix('fila') -> group(function (){
     Route::get('', [FilaController::class, 'listar']);
     Route::get('/{id}', [FilaController::class, 'buscarId']);
-    Route::middleware('auth:sanctum')->post('/criar', [FilaController::class, 'criar']);
+    Route::middleware('auth:sanctum')->post('/criar/{id}', [FilaController::class, 'criar']);
     Route::middleware('auth:sanctum')->delete('/deletar/{id}', [FilaController::class, 'deletar']);
     Route::middleware(['auth:sanctum', 'admin'])->delete('/destroy/{id}', [FilaController::class, 'destroy']);
     Route::middleware(['auth:sanctum', 'admin'])->post('/restore/{id}', [FilaController::class, 'restore']);

@@ -103,7 +103,7 @@ class UsuarioController extends Controller
         $usuario = Usuario::findOrFail($id);
         $usuario->delete();
         
-        return ResponseService::success('Usuário deletado com sucesso (soft delete)', null);
+        return ResponseService::success('Usuário deletado com sucesso (soft delete)', $usuario);
     }
 
     public function destroy(int $id)
@@ -111,7 +111,7 @@ class UsuarioController extends Controller
         $usuario = Usuario::withTrashed()->findOrFail($id);
         $usuario->forceDelete();
 
-        return ResponseService::success('Usuário destruído com sucesso', null);
+        return ResponseService::success('Usuário destruído com sucesso', $usuario);
     }
 
     public function restore(int $id)
